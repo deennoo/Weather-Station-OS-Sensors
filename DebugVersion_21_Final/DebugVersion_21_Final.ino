@@ -81,8 +81,8 @@
 #define DHTTYPE DHT22       // DHT 22  (AM2302)
 #define DHTPIN 2            // what pin we're connected to
 
-Adafruit_BMP085 bmp;
-DHT dht(DHTPIN, DHTTYPE);
+//Adafruit_BMP085 bmp;
+//DHT dht(DHTPIN, DHTTYPE);
 
 
 //Interface Definitions
@@ -123,6 +123,7 @@ int     humidity  = 0;
 byte    byte0     = 0;
 byte    byte1     = 0;
 byte    byte2     = 0;
+int     channel = 0;
 double  intTemp;
 double  intHumi;
 double  intPres;
@@ -163,7 +164,7 @@ void setup() {
    */
 
   //Tutorial on using the BMP05 Press/Temp transducer https://www.sparkfun.com/tutorials/253
-  bmp.begin();    //start the barometer and temp packages
+  //bmp.begin();    //start the barometer and temp packages
 
   // Initialize Timer1 for a 1 second interrupt
   // Thanks to http://www.engblaze.com/ for this section, see their Interrupt Tutorial
@@ -291,9 +292,9 @@ void add(byte bitData){
       }
       noErrors=false;//make it begin again from the start
       //Throw in our own Arduino sensors as well (normally in the OS Base Station).
-      intHumi=(double)dht.readHumidity();        //DHT22 readings %Humidity
-      intTemp=(double)bmp.readTemperature();     //internal temperature
-      intPres=(double)bmp.readPressure()/100.0;  //Pa reduced to mBar 
+      //intHumi=(double)dht.readHumidity();        //DHT22 readings %Humidity
+      //intTemp=(double)bmp.readTemperature();     //internal temperature
+      //intPres=(double)bmp.readPressure()/100.0;  //Pa reduced to mBar 
     }
   }
 }
@@ -497,18 +498,25 @@ void dumpAnemom(){
 // D AF 82 41 CB 89 42 00 48 85 55    Real example
 // Temperature 24.9799995422 degC Humidity 40.0000000000 % rel
 void thermom(){
-  temperature = (double)((nyb(11)*100)+(nyb(10)*10)+nyb(9))/10; //accuracy to 0.01 degree seems unlikely
+  channel = (nyb(5));
+  if (channel == 1){
+      temperature = (double)((nyb(11)*100)+(nyb(10)*10)+nyb(9))/10; //accuracy to 0.01 degree seems unlikely
   if(nyb(12)==1){//  Trigger a negative temperature
     temperature = -1.0*temperature;
-  }
+      }
   humidity = (nyb(14)*10)+nyb(13);
+} else if (channel > 1);{}  
 }
 void dumpThermom(){
+         
   Serial.print("Temperature ");
   Serial.print(temperature);
-  Serial.print(" degC, Humidity ");
+  Serial.print(" C, Humidity ");
   Serial.print(humidity);
-  Serial.println("% Rel");
+  Serial.print("%,");
+  Serial.print(" Channel ");
+  Serial.println(channel);
+  
 }
 //The novel added extra sensors, extracting and applying any necessary conversions
 void totExp(){
@@ -548,18 +556,19 @@ void usbData(){
     gustWindspeed=avWindspeed;       //reset gust to average, then take the larger next reading
     Serial.print(rainTotal,1);       //checked for calibration to mm, appears to be OK
     Serial.print(",");
-    Serial.print(temperature,2);     // OS Temperature Centigrade
+    Serial.print(temperature,2);    // OS Temperature Centigrade
     Serial.print(",");
+    Serial.print(humidity);       // OS Humidity rel %
+    //Serial.print(",");
     //The following two sensors are to be added but for simplicity sake they are not included in this version.
     //Only the preset globals are reported here, ie zeroes!!!
-    Serial.print(intTemp,2);         //BMP085 temperature (used for compensation of Pressure reading) Centigrade
-    Serial.print(",");
-    Serial.print(intPres,2);         //BMP085 pressure reading milli-bars
-    Serial.print(",");
-    Serial.print(intHumi);           //Digital DHT22 seems better than the OS in Temp/Hum sensor % relative
-    Serial.println();
+    //Serial.print(intTemp,2);         //BMP085 temperature (used for compensation of Pressure reading) Centigrade
+    //Serial.print(",");
+    //Serial.print(intPres,2);         //BMP085 pressure reading milli-bars
+    //Serial.print(",");
+    //Serial.print(intHumi);           //Digital DHT22 seems better than the OS in Temp/Hum sensor % relative
+    //Serial.println();
   }
 }
-
 
 

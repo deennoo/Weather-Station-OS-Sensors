@@ -46,6 +46,7 @@ float   rainTotal = 0.0;
 float   rainRate  = 0.0;
 double  temperature = 0.0;
 int     humidity  = 0;
+int     channel = 0;
 const char windDir[16][4] = {  
   "N  ", "NNE", "NE ", "ENE",  "E  ", "ESE", "SE ", "SSE",  "S  ", "SSW", "SW ", "WSW",  "W  ", "WNW", "NW ", "NNW"};
 
@@ -367,15 +368,20 @@ void thermom(){
   temperature = (double)((nyb(11)*100)+(nyb(10)*10)+nyb(9))/10; //accuracy to 0.01 degree seems unlikely
   if(nyb(12)==1){//  Trigger a negative temperature
     temperature = -1.0*temperature;
-  }
-  humidity = (nyb(14)*10)+nyb(13);
+  }  
+  humidity = (nyb(14)*10)+nyb(13);  
+  channel = (nyb(5));  
 }
 void dumpThermom(){
+  if (channel == 1){        
   Serial.print("Temperature ");
   Serial.print(temperature);
-  Serial.print(" degC, Humidity ");
+  Serial.print(" C, Humidity ");
   Serial.print(humidity);
-  Serial.println("% Rel");
+  Serial.print("%,");
+  Serial.print(" Channel ");
+  Serial.println(channel);
+  } else if (channel > 1);{}
 }
 
 void totExp(){
@@ -393,7 +399,6 @@ void eraseManchester(){
     manchester[i]=0;
   }
 }
-
 
 
 
